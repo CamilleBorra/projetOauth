@@ -4,6 +4,9 @@ define('OAUTH_CLIENT_ID', '621f59c71bc35');
 define('OAUTH_CLIENT_SECRET', '621f59c71bc36');
 define('FACEBOOK_CLIENT_ID', '1311135729390173');
 define('FACEBOOK_CLIENT_SECRET', 'fc5e25661fe961ab85d130779357541e');
+define('DISCORD_CLIENT_ID', '988809704195121173');
+define('DISCORD_CLIENT_SECRET', 't_CBR3lemnUnrTfHjAgDJhotEgwQlCa_');
+
 
 function login()
 {
@@ -21,7 +24,7 @@ function login()
             <input type='submit' value='Login'/>
         </form>
     ";
-    echo "<a href=\"http://localhost:8080/auth?{$queryParams}\">Login with OauthServer</a>";
+    echo "<br><a href=\"http://localhost:8080/auth?{$queryParams}\">Login with OauthServer</a>";
     $queryParams= http_build_query([
         'client_id' => FACEBOOK_CLIENT_ID,
         'redirect_uri' => 'http://localhost:8081/fb_callback',
@@ -29,7 +32,17 @@ function login()
         'scope' => 'public_profile,email',
         "state" => bin2hex(random_bytes(16))
     ]);
-    echo "<a href=\"https://www.facebook.com/v2.10/dialog/oauth?{$queryParams}\">Login with Facebook</a>";
+    echo "<br><a href=\"https://www.facebook.com/v2.10/dialog/oauth?{$queryParams}\">Login with Facebook</a>";
+
+    $queryParams= http_build_query([
+        'client_id' => DISCORD_CLIENT_ID,
+        'redirect_uri' => 'http://localhost:8081/discord_callback',
+        'response_type' => 'code',
+        'scope' => 'identify',
+        "state" => bin2hex(random_bytes(16))
+    ]);
+    // echo"<br><a href=\"https://discordapp.com/api/oauth2/authorize?{$queryParams}\">Login with Discord</a>";
+    echo"<br><a href=\"https://discordapp.com/api/oauth2/authorize?{$queryParams}\">Login with Discord</a>";
 }
 
 // Exchange code for token then get user info
@@ -96,6 +109,35 @@ function fbcallback()
     echo "Hello {$user['name']}";
 }
 
+function discordcallback (){
+    ["code" => $code, "state" => $state] = $_GET;
+
+    $specifParams = [
+            'code' => $code,
+            'grant_type' => 'authorization_code',
+        ];
+    $queryParams = http_build_query(array_merge([
+        'client_id' => DISCORD_CLIENT_ID,
+        'client_secret' => DISCORD_CLIENT_SECRET,
+        'redirect_uri' => 'http://localhost:8081/discord_callback',
+        'response_type' => 'code',
+        'scope' => 'identify',
+        "state" => bin2hex(random_bytes(16))
+
+    ], $specifParams));
+    $response = file_get_contents("https://discordapp.com/api/oauth2/authorize?{$queryParams}");
+    $token = json_decode($response, true);
+    $context = stream_context_create([
+        'http' => [
+            'header' => "Authorization: Bearer {$token['access_token']}"
+            ]
+        ]);
+    $response = file_get_contents("https://discordapp.com/api/users/@me", false, $context);
+    $user = json_decode($response, true);
+    var_dump($user);
+    echo "Hello {$user['username']}";
+}
+
 $route = $_SERVER["REQUEST_URI"];
 switch (strtok($route, "?")) {
     case '/login':
@@ -106,6 +148,9 @@ switch (strtok($route, "?")) {
         break;
     case '/fb_callback':
         fbcallback();
+        break;
+    case '/discord_callback':
+        discordcallback();
         break;
     default:
         http_response_code(404);
