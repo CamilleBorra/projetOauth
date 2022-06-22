@@ -109,9 +109,9 @@ function fbcallback()
     echo "Hello {$user['name']}";
 }
 
-function discordcallback (){
+function discordcallback()
+{
     ["code" => $code, "state" => $state] = $_GET;
-
     $specifParams = [
             'code' => $code,
             'grant_type' => 'authorization_code',
@@ -125,17 +125,30 @@ function discordcallback (){
         "state" => bin2hex(random_bytes(16))
 
     ], $specifParams));
-    $response = file_get_contents("https://discordapp.com/api/oauth2/authorize?{$queryParams}");
+    $context = stream_context_create([
+        'http' => [
+            'method' => "POST",
+            'header' => "Content-type: application/x-www-form-urlencoded\r\n"
+            . "Content-Length: " . strlen($queryParams) . "\r\n",
+            'content' => $queryParams
+            ]
+        ]
+    );
+
+    $response = file_get_contents("https://discordapp.com/api/oauth2/token", false, $context);
     $token = json_decode($response, true);
     $context = stream_context_create([
         'http' => [
+            'method' => "GET",
             'header' => "Authorization: Bearer {$token['access_token']}"
             ]
         ]);
-    $response = file_get_contents("https://discordapp.com/api/users/@me", false, $context);
+    $response = file_get_contents("https://discord.com/api/oauth2/@me", false, $context);
     $user = json_decode($response, true);
-    var_dump($user);
-    echo "Hello {$user['username']}";
+    echo "<pre>";
+    print_r($user);
+    echo"</pre>";
+    echo "<br> <h1>Hello {$user['user']['username']}</h1>";
 }
 
 $route = $_SERVER["REQUEST_URI"];
