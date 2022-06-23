@@ -131,8 +131,7 @@ function fbcallback()
 }
 
 
-function discordcallback()
-{
+function discordcallback(){
     ["code" => $code, "state" => $state] = $_GET;
     $specifParams = [
             'code' => $code,
@@ -147,7 +146,8 @@ function discordcallback()
         "state" => bin2hex(random_bytes(16))
 
     ], $specifParams));
-    $context = stream_context_create([
+    $context = stream_context_create(
+        [
         'http' => [
             'method' => "POST",
             'header' => "Content-type: application/x-www-form-urlencoded\r\n"
@@ -171,22 +171,24 @@ function discordcallback()
     print_r($user);
     echo"</pre>";
     echo "<br> <h1>Hello {$user['user']['username']}</h1>";
+}
 
-function gitCallback(){
-    ["code" => $code, "state" => $state] = $_GET;
+    function gitCallback()
+    {
+        ["code" => $code, "state" => $state] = $_GET;
 
-    $specifParams = [
+        $specifParams = [
             'code' => $code,
             'state' => $state,
             'grant_type' => 'authorization_code',
         ];
-    $queryParams = http_build_query(array_merge([
+        $queryParams = http_build_query(array_merge([
         'client_id' => GIT_CLIENT_ID,
         'client_secret' => GIT_CLIENT_SECRET,
         'redirect_uri' => 'http://localhost:8081/git_callback',
     ], $specifParams));
 
-    $context = stream_context_create([
+        $context = stream_context_create([
         'http' => [
             'method'  => 'POST',
             'header'  => "Content-type: application/x-www-form-urlencoded\r\nAccept: application/json",
@@ -195,23 +197,22 @@ function gitCallback(){
     ]);
 
 
-    $response = file_get_contents("https://github.com/login/oauth/access_token", false, $context);
-    $token = json_decode($response, true);
+        $response = file_get_contents("https://github.com/login/oauth/access_token", false, $context);
+        $token = json_decode($response, true);
  
-    $context = stream_context_create([
+        $context = stream_context_create([
         'http' => [
             'header' => "Authorization: token {$token['access_token']}\r\nUser-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/13.0.782.112 Safari/535.1"
             ]
         ]);
-    $response = file_get_contents("https://api.github.com/user", false, $context);
-    $user = json_decode($response, true);
+        $response = file_get_contents("https://api.github.com/user", false, $context);
+        $user = json_decode($response, true);
 
-    echo "Hello {$user['login']}";
+        echo "Hello {$user['login']}";
+    }
 
-}
-
-$route = $_SERVER["REQUEST_URI"];
-switch (strtok($route, "?")) {
+    $route = $_SERVER["REQUEST_URI"];
+    switch (strtok($route, "?")) {
     case '/login':
         login();
         break;
