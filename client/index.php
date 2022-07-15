@@ -1,16 +1,6 @@
 <?php
 
-define('OAUTH_CLIENT_ID', '621f59c71bc35');
-define('OAUTH_CLIENT_SECRET', '621f59c71bc36');
-define('FACEBOOK_CLIENT_ID', '1311135729390173');
-define('FACEBOOK_CLIENT_SECRET', 'fc5e25661fe961ab85d130779357541e');
-
-define('DISCORD_CLIENT_ID', '988809704195121173');
-define('DISCORD_CLIENT_SECRET', 't_CBR3lemnUnrTfHjAgDJhotEgwQlCa_');
-
-
-define('GIT_CLIENT_ID', 'bb7d0b42d13a38ab86d8' );
-define('GIT_CLIENT_SECRET', '0d61663aa62a96d6db0edb247eeadeaae248134e');
+include 'conf.php';
 
 
 
