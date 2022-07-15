@@ -1,19 +1,12 @@
 <?php
 
 include 'conf.php';
-
+include 'function.php';
 
 
 function login()
 {
-    
-    $queryParams= http_build_query([
-        'client_id' => OAUTH_CLIENT_ID,
-        'redirect_uri' => 'http://localhost:8081/callback',
-        'response_type' => 'code',
-        'scope' => 'basic',
-        "state" =>bin2hex(random_bytes(16))
-    ]);
+    $queryParams=query(OAUTH_CLIENT_ID,'http://localhost:8081/callback','code','basic');
     echo "
         <form action='/callback' method='post'>
             <input type='text' name='username'/>
@@ -22,36 +15,15 @@ function login()
         </form>
     ";
     echo "<br><a href=\"http://localhost:8080/auth?{$queryParams}\">Login with OauthServer</a>";
-    $queryParams= http_build_query([
-        'client_id' => FACEBOOK_CLIENT_ID,
-        'redirect_uri' => 'http://localhost:8081/fb_callback',
-        'response_type' => 'code',
-        'scope' => 'public_profile,email',
-        "state" => bin2hex(random_bytes(16))
-    ]);
+    $queryParams=query(FACEBOOK_CLIENT_ID,'http://localhost:8081/fb_callback', 'code','public_profile,email');
 
     echo "<br><a href=\"https://www.facebook.com/v2.10/dialog/oauth?{$queryParams}\">Login with Facebook</a>";
+    $queryParams=query(DISCORD_CLIENT_ID, 'http://localhost:8081/discord_callback','code', 'identify');
 
-    $queryParams= http_build_query([
-        'client_id' => DISCORD_CLIENT_ID,
-        'redirect_uri' => 'http://localhost:8081/discord_callback',
-        'response_type' => 'code',
-        'scope' => 'identify',
-        "state" => bin2hex(random_bytes(16))
-    ]);
     // echo"<br><a href=\"https://discordapp.com/api/oauth2/authorize?{$queryParams}\">Login with Discord</a>";
     echo"<br><a href=\"https://discordapp.com/api/oauth2/authorize?{$queryParams}\">Login with Discord</a>";
 
-   
-    $queryParams= http_build_query([
-        'client_id' => GIT_CLIENT_ID,
-        'redirect_uri' => 'http://localhost:8081/git_callback',
-        //'login' => GIT_LOGIN,
-        'response_type' => 'code',
-        'scope' => 'public_profile,email',
-        'state' => bin2hex(random_bytes(16)),
-        'allow_signup' => true
-    ]);
+   $queryParams=query(GIT_CLIENT_ID, 'http://localhost:8081/git_callback', 'code', 'public_profile,email', true);
     echo "<a href=\"https://github.com/login/oauth/authorize?{$queryParams}\">Login with GitHub</a>";
 
 }
@@ -157,9 +129,7 @@ function discordcallback(){
         ]);
     $response = file_get_contents("https://discord.com/api/oauth2/@me", false, $context);
     $user = json_decode($response, true);
-    echo "<pre>";
-    print_r($user);
-    echo"</pre>";
+
     echo "<br> <h1>Hello {$user['user']['username']}</h1>";
 }
 
